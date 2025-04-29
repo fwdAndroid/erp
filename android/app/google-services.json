@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "563542385957",
+    "project_id": "osarmayalsia",
+    "storage_bucket": "osarmayalsia.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:563542385957:android:d46d7333b59b5c6f7f26cc",
+        "android_client_info": {
+          "package_name": "com.example.erp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "563542385957-56k6kk916tpn2mkrnp200ng3c1fdca6m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5GHMhawsVYY3QAbV-PU5HtN1i5M_WW48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "563542385957-56k6kk916tpn2mkrnp200ng3c1fdca6m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "563542385957-937g0n2pvssvis9mpun5dqs637pc9rsb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.jilaniAdmin"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
