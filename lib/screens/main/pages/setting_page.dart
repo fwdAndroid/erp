@@ -1,6 +1,6 @@
 import 'package:erp/screens/payment/payment_screen.dart';
 import 'package:erp/screens/setting_pages/add_discount_setting.dart';
-import 'package:erp/screens/setting_pages/add_tax_setting.dart';
+import 'package:erp/screens/setting_pages/view_tax_setting.dart';
 import 'package:erp/screens/subscription/subscription.dart';
 import 'package:erp/widgets/logout_widget.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +51,7 @@ class _SettingPageState extends State<SettingPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (builder) => AddTaxSetting()),
+                  MaterialPageRoute(builder: (builder) => ViewTaxSetting()),
                 );
               },
             ),
