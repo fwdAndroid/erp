@@ -1,6 +1,9 @@
+import 'package:erp/screens/auth/forgot_password.dart';
 import 'package:erp/screens/auth/registration_screen.dart';
 import 'package:erp/screens/main/main_dashboard.dart';
+import 'package:erp/services/auth_methods.dart';
 import 'package:erp/uitl/colors.dart';
+import 'package:erp/uitl/show_message_bar.dart';
 import 'package:erp/widgets/text_form_field_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -15,6 +18,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -61,6 +65,7 @@ class _LoginScreenState extends State<LoginScreen> {
           Padding(
             padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
             child: TextField(
+              controller: passwordController,
               obscureText: _obscurePassword,
               decoration: InputDecoration(
                 hintText: "Password",
@@ -91,36 +96,64 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
 
           SizedBox(height: size.height * 0.02),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
-            child: SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: buttonColor,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+          isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: EdgeInsets.symmetric(horizontal: size.width * 0.1),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 55,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: buttonColor,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    onPressed: () async {
+                      if (emailController.text.isEmpty ||
+                          passwordController.text.isEmpty) {
+                        showMessageBar("Email & Password is Required", context);
+                      } else {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        String result = await AuthMethods().loginUpUser(
+                          email: emailController.text.trim(),
+                          pass: passwordController.text.trim(),
+                        );
+                        if (result == 'success') {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (builder) => MainDashboard(),
+                            ),
+                          );
+                        } else {
+                          showMessageBar(result, context);
+                        }
+                        setState(() {
+                          isLoading = false;
+                        });
+                      }
+                    },
+                    child: Text(
+                      "Login",
+                      style: TextStyle(fontSize: 18, color: colorWhite),
+                    ),
                   ),
                 ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (builder) => MainDashboard()),
-                  );
-                },
-                child: Text(
-                  "Login",
-                  style: TextStyle(fontSize: 18, color: colorWhite),
-                ),
               ),
-            ),
-          ),
           SizedBox(height: size.height * 0.025),
 
           // Forget password
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (builder) => ForgotPassword()),
+              );
+            },
             child: Text(
               "Forget User / Password ?",
               style: TextStyle(color: forgotPasswordColor, fontSize: 15),
