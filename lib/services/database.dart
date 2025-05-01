@@ -62,6 +62,7 @@ class Database {
   }
 
   Future<String> addCustomer({
+    required String assignedDate,
     required String customerName,
     required String customerBussinessName,
     required String currency,
@@ -94,6 +95,7 @@ class Database {
         billingAddress: billingAddress,
         billingCity: billingCity,
         shippingAddress: shippingAddress,
+        assignedDate: assignedDate,
         shippingCity: shippingCity,
         shippingCountry: shippingCountry,
         items: items,

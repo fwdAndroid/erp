@@ -26,10 +26,14 @@ class CustomerModel {
   String uid;
   String uuid;
 
+  // Date
+  String assignedDate;
+
   CustomerModel({
     required this.uid,
     required this.customerName,
     required this.customerEmail,
+    required this.assignedDate,
     required this.customerBussinessName,
     required this.customerPhoneNumber,
     required this.currency,
@@ -58,6 +62,7 @@ class CustomerModel {
     'billingCountry': billingCountry,
     'billingAddress': billingAddress,
     'billingCity': billingCity,
+    'assignedDate': assignedDate,
     'shippingAddress': shippingAddress,
     'shippingCity': shippingCity,
     'shippingCountry': shippingCountry,
@@ -75,6 +80,7 @@ class CustomerModel {
       customerPhoneNumber: snapshot['customerPhoneNumber'],
       currency: snapshot['currency'],
       taxCategory: snapshot['taxCategory'],
+      assignedDate: snapshot['assignedDate'],
       taxId: snapshot['taxId'],
       billingCountry: snapshot['billingCountry'],
       billingAddress: snapshot['billingAddress'],
@@ -92,6 +98,7 @@ class CustomerModel {
       uid: json['uid'],
       uuid: json['uuid'],
       customerEmail: json['customerEmail'],
+      assignedDate: json['assignedDate'],
       customerBussinessName: json['customerBussinessName'],
       customerPhoneNumber: json['customerPhoneNumber'],
       currency: json['currency'],

@@ -341,6 +341,7 @@ class _AddCustomerState extends State<AddCustomer> {
                   ),
                   onPressed: () async {
                     await Database().addCustomer(
+                      assignedDate: assignDateController.text,
                       customerName: nameController.text,
                       customerBussinessName: bussinessController.text,
                       customerEmail: emailController.text,
