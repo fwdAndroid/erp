@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:erp/models/customer_model.dart';
 import 'package:erp/models/discount_model.dart';
 import 'package:erp/models/tax_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -54,6 +55,54 @@ class Database {
           .doc(uuid)
           .set(userModel.toJson());
       res = 'sucess';
+    } catch (e) {
+      res = e.toString();
+    }
+    return res;
+  }
+
+  Future<String> addCustomer({
+    required String customerName,
+    required String customerBussinessName,
+    required String currency,
+    required String taxCategory,
+    required String taxId,
+    required String billingCountry,
+    required String billingAddress,
+    required String billingCity,
+    required String shippingAddress,
+    required String shippingCity,
+    required String shippingCountry,
+    required List<Map<String, dynamic>> items,
+    required String customerEmail,
+    required String customerPhoneNumber,
+  }) async {
+    String res = 'Some error occurred';
+    try {
+      String uuid = Uuid().v4();
+      CustomerModel userModel = CustomerModel(
+        customerName: customerName,
+        uid: FirebaseAuth.instance.currentUser!.uid,
+        customerBussinessName: customerBussinessName,
+        uuid: uuid,
+        currency: currency,
+        customerEmail: customerEmail,
+        customerPhoneNumber: customerPhoneNumber,
+        taxCategory: taxCategory,
+        taxId: taxId,
+        billingCountry: billingCountry,
+        billingAddress: billingAddress,
+        billingCity: billingCity,
+        shippingAddress: shippingAddress,
+        shippingCity: shippingCity,
+        shippingCountry: shippingCountry,
+        items: items,
+      );
+      await FirebaseFirestore.instance
+          .collection('customer')
+          .doc(uuid)
+          .set(userModel.toJson());
+      res = 'success';
     } catch (e) {
       res = e.toString();
     }

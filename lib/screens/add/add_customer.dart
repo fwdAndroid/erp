@@ -1,4 +1,5 @@
 import 'package:erp/screens/conformation_screen/customer_conformation_screen.dart';
+import 'package:erp/services/database.dart';
 import 'package:erp/uitl/colors.dart';
 import 'package:erp/widgets/add_item_widget.dart';
 import 'package:erp/widgets/text_form_field_widget.dart';
@@ -34,6 +35,10 @@ class _AddCustomerState extends State<AddCustomer> {
   TextEditingController assignDateController = TextEditingController();
   TextEditingController shippingAddressController = TextEditingController();
   TextEditingController shippingCityController = TextEditingController();
+  List<Map<String, dynamic>> selectedItems = [];
+  TextEditingController taxIdController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,6 +94,7 @@ class _AddCustomerState extends State<AddCustomer> {
               child: IntlPhoneField(
                 decoration: const InputDecoration(labelText: 'Phone Number'),
                 initialCountryCode: 'US', // Default country
+                controller: phoneController,
                 onChanged: (phone) {
                   print('Full phone number: ${phone.completeNumber}');
                 },
@@ -133,8 +139,8 @@ class _AddCustomerState extends State<AddCustomer> {
             Padding(
               padding: const EdgeInsets.only(left: 8.0, right: 8, top: 8),
               child: TextFormInputFeildWidget(
-                controller: taxCategoryController,
-                hintText: "Tax Category",
+                controller: taxIdController,
+                hintText: "Tax ID",
                 textInputType: TextInputType.text,
               ),
             ),
@@ -267,20 +273,51 @@ class _AddCustomerState extends State<AddCustomer> {
               ],
             ),
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 // Handle save action
-                showDialog(
+                final result = await showDialog<Map<String, dynamic>>(
                   context: context,
                   builder: (BuildContext context) {
                     return AddItemWidget();
                   },
                 );
+
+                if (result != null) {
+                  setState(() {
+                    selectedItems.add(result);
+                  });
+                }
               },
               child: Text(
                 'Add Item',
                 style: TextStyle(color: buttonColor, fontSize: 18),
               ),
             ),
+            if (selectedItems.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children:
+                      selectedItems.map((item) {
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          child: ListTile(
+                            title: Text("Name: ${item['name'] ?? ''}"),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (item['price'] != null)
+                                  Text("Price: ${item['price']}"),
+                                if (item['description'] != null)
+                                  Text("Desc: ${item['description']}"),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                ),
+              ),
             TextButton(
               onPressed: () {
                 // Handle save action
@@ -302,7 +339,23 @@ class _AddCustomerState extends State<AddCustomer> {
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    await Database().addCustomer(
+                      customerName: nameController.text,
+                      customerBussinessName: bussinessController.text,
+                      customerEmail: emailController.text,
+                      customerPhoneNumber: '1234567890',
+                      currency: selectedCurrency!,
+                      taxCategory: taxCategoryController.text,
+                      taxId: taxIdController.text,
+                      billingCountry: selectedCountry!,
+                      billingAddress: addressController.text,
+                      billingCity: cityController.text,
+                      shippingAddress: shippingAddressController.text,
+                      shippingCity: shippingCityController.text,
+                      shippingCountry: selectedCountry!,
+                      items: selectedItems ?? [],
+                    );
                     Navigator.push(
                       context,
                       MaterialPageRoute(

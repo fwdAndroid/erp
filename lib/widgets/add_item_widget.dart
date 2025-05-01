@@ -75,6 +75,7 @@ class _AddItemWidgetState extends State<AddItemWidget> {
                   child: Padding(
                     padding: const EdgeInsets.only(left: 8.0, right: 8, top: 8),
                     child: TextFormField(
+                      controller: itemDescriptionController,
                       decoration: InputDecoration(
                         labelText: 'Description',
                         hintText: 'Enter description here',
@@ -109,7 +110,12 @@ class _AddItemWidgetState extends State<AddItemWidget> {
         ),
         TextButton(
           onPressed: () {
-            Navigator.pop(context);
+            final item = {
+              "name": itemNameController.text,
+              "price": itemPriceController.text,
+              "description": itemDescriptionController.text,
+            };
+            Navigator.pop(context, item);
           },
           child: Text("Add Item"),
         ),
