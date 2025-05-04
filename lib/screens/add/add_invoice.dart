@@ -1,8 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:erp/screens/conformation_screen/conformation_invoice_screen.dart';
 import 'package:erp/uitl/colors.dart';
 import 'package:erp/widgets/add_item_invoice_widget.dart';
-import 'package:erp/widgets/add_tax_widget.dart';
-import 'package:erp/widgets/other_charges_widget.dart';
 import 'package:flutter/material.dart';
 
 class AddInvoice extends StatefulWidget {
@@ -14,305 +13,142 @@ class AddInvoice extends StatefulWidget {
 
 class _AddInvoiceState extends State<AddInvoice> {
   TextEditingController emailController = TextEditingController();
-  TextEditingController preController = TextEditingController();
-  TextEditingController termController = TextEditingController();
+  List<Map<String, dynamic>> customers = [];
+
+  Map<String, String>? itemSummary;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCustomers();
+  }
+
+  Future<void> fetchCustomers() async {
+    final snapshot =
+        await FirebaseFirestore.instance.collection('customer').get();
+    final List<Map<String, dynamic>> customerList =
+        snapshot.docs.map((doc) {
+          return {
+            'customerName': doc['customerName'],
+            'customerEmail': doc['customerEmail'],
+          };
+        }).toList();
+
+    setState(() {
+      customers = customerList;
+    });
+  }
+
+  void showCustomerDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Select Customer"),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: customers.length,
+              itemBuilder: (context, index) {
+                final customer = customers[index];
+                return ListTile(
+                  title: Text("Name ${customer['customerName']}"),
+                  subtitle: Text("Email ${customer['customerEmail']}"),
+                  onTap: () {
+                    emailController.text = customer['customerName'];
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void openAddItemDialog() async {
+    final result = await showDialog<Map<String, String>>(
+      context: context,
+      builder: (context) => AddItemInvoiceWidget(),
+    );
+
+    if (result != null) {
+      setState(() {
+        itemSummary = result;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Creating Invoice',
-          style: TextStyle(fontWeight: FontWeight.bold, color: colorBlack),
-        ),
-        centerTitle: true,
-        backgroundColor: colorWhite,
-      ),
       body: SingleChildScrollView(
+        padding: const EdgeInsets.all(8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Card(
-              margin: EdgeInsets.all(8),
-              child: ListTile(
-                title: Text(
-                  "Invoice",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: colorBlack,
-                    fontSize: 19,
+            Text(
+              "Client Name or Email",
+              style: TextStyle(color: colorBlack, fontSize: 12),
+            ),
+            TextFormField(
+              controller: emailController,
+              readOnly: true,
+              onTap: showCustomerDialog,
+              decoration: InputDecoration(
+                hintText: "Select Client",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                suffixIcon: const Icon(Icons.arrow_drop_down),
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TextButton(
+                  onPressed: openAddItemDialog,
+                  child: Text(
+                    "Add Item",
+                    style: TextStyle(color: buttonColor, fontSize: 17),
                   ),
                 ),
-                subtitle: Column(
-                  children: [
-                    Divider(),
-                    Row(
-                      children: [
-                        Text(
-                          "Invoice No:  ",
-                          style: TextStyle(color: colorBlack),
-                        ),
-                        Text("123456789", style: TextStyle(color: colorBlack)),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          "Invoice Date:  ",
-                          style: TextStyle(color: colorBlack),
-                        ),
-                        Text("12/12/1", style: TextStyle(color: colorBlack)),
-                      ],
-                    ),
-                  ],
+                Text(
+                  "Rs: ${itemSummary != null ? itemSummary!['total'] ?? '0.00' : '0.00'}",
+                  style: TextStyle(color: buttonColor, fontSize: 17),
                 ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8, top: 8),
-              child: Text(
-                "Client Name or Email",
-                style: TextStyle(color: colorBlack, fontSize: 12),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8),
-              child: TextFormField(
-                decoration: InputDecoration(
-                  hintText: "Enter Client Name or Email",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: colorBlack),
-                  ),
-                ),
-                controller: emailController,
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AddItemInvoiceWidget();
-                  },
-                );
-              },
-              child: Text(
-                "Add Item",
-                style: TextStyle(color: buttonColor, fontSize: 17),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "SubTotal",
-                      style: TextStyle(color: colorBlack, fontSize: 16),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "PKR 1000",
-                      style: TextStyle(color: colorBlack, fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return OtherChargesWidget();
-                  },
-                );
-              },
-              child: Text(
-                "Other Charges (Discount, Shipping, Other Amount)",
-                style: TextStyle(color: buttonColor, fontSize: 14),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "Shipping Charges",
-                      style: TextStyle(color: colorBlack, fontSize: 16),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "1000",
-                      style: TextStyle(color: colorBlack, fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
+              ],
             ),
 
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "Total (Exculding Tax)",
-                      style: TextStyle(color: colorBlack, fontSize: 16),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "1000",
-                      style: TextStyle(color: colorBlack, fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return AddTaxWidget();
-                  },
-                );
-              },
-              child: Text("Add Tax", style: TextStyle(color: buttonColor)),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "Total Inclusive Tax",
-                      style: TextStyle(color: colorBlack, fontSize: 16),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      "50",
-                      style: TextStyle(color: colorBlack, fontSize: 16),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Divider(color: colorBlack, height: 1),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ExpansionTile(
-                title: Text("Notes"),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0, right: 8),
-                    child: TextFormField(
-                      maxLines: 6,
-                      decoration: InputDecoration(
-                        hintText: "Description (optional)",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: colorBlack),
-                        ),
-                      ),
-                      controller: preController,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ExpansionTile(
-                title: Text("Terms & Condition"),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 8.0, right: 8),
-                    child: TextFormField(
-                      maxLines: 6,
-                      decoration: InputDecoration(
-                        hintText: "Terms & Condition",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide(color: colorBlack),
-                        ),
-                      ),
-                      controller: termController,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Divider(color: colorBlack, height: 1),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                "Add Attachment [upload files]",
-                style: TextStyle(color: buttonColor, fontSize: 14),
-              ),
-            ),
-            TextButton(
-              onPressed: () {},
-              child: Text(
-                "Payment Details",
-                style: TextStyle(color: buttonColor, fontSize: 14),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8),
-              child: TextFormField(
-                maxLines: 6,
-                decoration: InputDecoration(
-                  hintText: "Auto Fetch From Setting",
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: colorBlack),
+            const SizedBox(height: 10),
+
+            buildInvoiceSummary(),
+
+            SizedBox(
+              width: double.infinity,
+              height: 55,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                controller: termController,
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(8),
-              child: SizedBox(
-                width: double.infinity,
-                height: 55,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: buttonColor,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (builder) => const InvoiceConformationScreen(),
                     ),
-                  ),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (builder) => InvoiceConformationScreen(),
-                      ),
-                    );
-                  },
-                  child: Text(
-                    "Continue",
-                    style: TextStyle(fontSize: 18, color: colorWhite),
-                  ),
+                  );
+                },
+                child: Text(
+                  "Continue",
+                  style: TextStyle(fontSize: 18, color: colorWhite),
                 ),
               ),
             ),
@@ -321,4 +157,67 @@ class _AddInvoiceState extends State<AddInvoice> {
       ),
     );
   }
+
+  Widget buildInvoiceSummary() {
+    final quantity = itemSummary?['quantity'] ?? '0';
+    final unitPrice = itemSummary?['unitPrice'] ?? '0';
+    final discountStr = itemSummary?['discount'] ?? '0';
+    final taxStr = itemSummary?['tax'] ?? '0';
+    final totalStr = itemSummary?['total'] ?? '0';
+
+    final discount = double.tryParse(discountStr) ?? 0;
+    final tax = double.tryParse(taxStr) ?? 0;
+    final total = double.tryParse(totalStr) ?? 0;
+
+    final subtotal = total + discount - tax;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(height: 8),
+        _summaryRow("Quantity", quantity),
+        _summaryRow("Price", unitPrice),
+        _summaryRow("Discount", "- Rs. ${discount.toStringAsFixed(2)}"),
+        _summaryRow("Tax", " VAT. ${tax.toStringAsFixed(2)}"),
+        _summaryRow("Total", "Rs. ${total.toStringAsFixed(2)}"),
+        const SizedBox(height: 10),
+        Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _summaryRow("Subtotal", "Rs. ${subtotal.toStringAsFixed(2)}"),
+                _summaryRow("Discount", "- Rs. ${discount.toStringAsFixed(2)}"),
+                _summaryRow("Tax", "+ VAT Rs. ${tax.toStringAsFixed(2)}"),
+                const Divider(),
+                _summaryRow("Grand Total", "Rs. ${total.toStringAsFixed(2)}"),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 10),
+      ],
+    );
+  }
+}
+
+Widget _summaryRow(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 2.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(fontSize: 14)),
+        Text(
+          value,
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+        ),
+      ],
+    ),
+  );
 }
